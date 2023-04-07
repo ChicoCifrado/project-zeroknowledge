@@ -1,0 +1,55 @@
+#include <iostream>
+#include <unordered_map>
+#include <string>
+
+// Definición de la estructura UserInfo para almacenar información del usuario
+struct UserInfo {
+    std::string username;
+    std::string password;
+};
+
+// Definición de la clase AuthenticationModule
+class AuthenticationModule {
+private:
+    // Unordered_map para almacenar los usuarios registrados
+    std::unordered_map<std::string, UserInfo> registeredUsers;
+
+public:
+    // Constructor del módulo de autenticación
+    AuthenticationModule() {
+        // Se puede agregar aquí algún usuario de prueba para facilitar las pruebas del módulo
+    }
+
+    // Función para registrar un nuevo usuario
+    bool registerUser(const std::string& username, const std::string& password) {
+        // Verificar si el usuario ya está registrado
+        if (registeredUsers.find(username) != registeredUsers.end()) {
+            std::cout << "El usuario " << username << " ya está registrado" << std::endl;
+            return false;
+        }
+        
+        // Si el usuario no está registrado, agregarlo al unordered_map
+        registeredUsers[username] = {username, password};
+        std::cout << "El usuario " << username << " ha sido registrado correctamente" << std::endl;
+        return true;
+    }
+
+    // Función para autenticar un usuario
+    bool authenticateUser(const std::string& username, const std::string& password) {
+        // Verificar si el usuario existe
+        if (registeredUsers.find(username) == registeredUsers.end()) {
+            std::cout << "El usuario " << username << " no está registrado" << std::endl;
+            return false;
+        }
+        
+        // Verificar si la contraseña es correcta
+        if (registeredUsers[username].password != password) {
+            std::cout << "La contraseña para el usuario " << username << " es incorrecta" << std::endl;
+            return false;
+        }
+
+        // Si el usuario y contraseña son correctos, la autenticación es exitosa
+        std::cout << "El usuario " << username << " ha sido autenticado correctamente" << std::endl;
+        return true;
+    }
+};
