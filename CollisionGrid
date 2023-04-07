@@ -1,0 +1,73 @@
+#include <vector>
+#include "GameObject.h" // archivo que define la clase GameObject
+
+class CollisionGrid {
+public:
+    CollisionGrid(int cellSize, int worldSize) {
+        // Inicializar la cuadrícula de colisiones
+        cellSize_ = cellSize;
+        worldSize_ = worldSize;
+        int cols = worldSize_ / cellSize_;
+        int rows = worldSize_ / cellSize_;
+        cells_.resize(cols * rows);
+    }
+
+    void addGameObject(GameObject* object) {
+        // Agregar un objeto a la cuadrícula de colisiones
+        int col = object->x / cellSize_;
+        int row = object->y / cellSize_;
+        int index = row * (worldSize_ / cellSize_) + col;
+        cells_[index].push_back(object);
+    }
+
+    void removeGameObject(GameObject* object) {
+        // Remover un objeto de la cuadrícula de colisiones
+        int col = object->x / cellSize_;
+        int row = object->y / cellSize_;
+        int index = row * (worldSize_ / cellSize_) + col;
+        for (int i = 0; i < cells_[index].size(); ++i) {
+            if (cells_[index][i] == object) {
+                cells_[index].erase(cells_[index].begin() + i);
+                break;
+            }
+        }
+    }
+
+    void moveGameObject(GameObject* object, float newX, float newY) {
+        // Mover un objeto dentro de la cuadrícula de colisiones
+        int oldCol = object->x / cellSize_;
+        int oldRow = object->y / cellSize_;
+        int newCol = newX / cellSize_;
+        int newRow = newY / cellSize_;
+        if (oldCol != newCol || oldRow != newRow) {
+            int oldIndex = oldRow * (worldSize_ / cellSize_) + oldCol;
+            int newIndex = newRow * (worldSize_ / cellSize_) + newCol;
+            cells_[oldIndex].erase(std::remove(cells_[oldIndex].begin(), cells_[oldIndex].end(), object), cells_[oldIndex].end());
+            cells_[newIndex].push_back(object);
+        }
+        object->x = newX;
+        object->y = newY;
+    }
+
+    void checkCollisions() {
+        // Comprobar colisiones en cada celda de la cuadrícula
+        for (int i = 0; i < cells_.size(); ++i) {
+            for (int j = 0; j < cells_[i].size(); ++j) {
+                GameObject* objectA = cells_[i][j];
+                for (int k = j + 1; k < cells_[i].size(); ++k) {
+                    GameObject* objectB = cells_[i][k];
+                    if (objectA->checkCollision(objectB)) {
+                        // Manejar la colisión entre los objetos
+                        objectA->handleCollision(objectB);
+                        objectB->handleCollision(objectA);
+                    }
+                }
+            }
+        }
+    }
+
+private:
+    int cellSize_;
+    int worldSize_;
+    std::vector<std::vector<GameObject*>> cells_;
+};
